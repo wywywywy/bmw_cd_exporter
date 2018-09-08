@@ -49,9 +49,22 @@ The default is rest_of_world.
     cd bmw_cd_exporter
     pip install -r requirements.txt
 
+Use pip3 if your pip is for Python 2.
+
 ## With Docker
 
     Todo
+
+## Prometheus Config
+
+Add this to prometheus.yml and change the IP/port if needed.
+
+    - job_name: 'bmw_cd_exporter'
+        scrape_interval: 5m
+        metrics_path: /
+        static_configs:
+        - targets:
+            - '127.0.0.1:9488'
 
 # Notes
 
