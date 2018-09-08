@@ -20,6 +20,9 @@ This exporter uses [Gerard33's bimmer_connected library](https://github.com/gera
     --region rest_of_world
                           BMW Connected Drive region
                           (north_america/china/rest_of_world)
+    --attributes attributes.json
+                          Override path to the JSON file containing all 
+                          attributes (optional)
 
 ## Environment Variables
 

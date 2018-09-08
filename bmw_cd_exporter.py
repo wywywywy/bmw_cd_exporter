@@ -23,10 +23,11 @@ DEBUG = int(os.environ.get('DEBUG', '0'))
 
 
 class DataCollector(object):
-    def __init__(self, user, password, region):
+    def __init__(self, user, password, region, attributes):
         self._user = user
         self._password = password
         self._region = region
+        self._attributes = attributes
 
     def _sanitise(self, string):
         return ''.join(e for e in string if e.isalnum())
@@ -34,7 +35,7 @@ class DataCollector(object):
     def collect(self):
         # set constants
         app = 'bmwconnecteddrive'
-        json_filename = 'attributes.json'
+        json_filename = self._attributes
 
         # connect to bmw
         account = ConnectedDriveAccount(self._user, self._password, get_region_from_name(self._region))
@@ -92,6 +93,13 @@ def parse_args():
         help='BMW Connected Drive region (north_america/china/rest_of_world)',
         default=os.environ.get('BMWCD_REGION','rest_of_world')
     )
+    parser.add_argument(
+        '--attributes',
+        metavar='attributes.json',
+        required=False,
+        help='Override path to the JSON file containing all attributes (optional)',
+        default='attributes.json'
+    )
     return parser.parse_args()
 
 
@@ -111,7 +119,7 @@ if __name__ == "__main__":
             exit(1)
 
         # register & start prometheus exporter server
-        REGISTRY.register(DataCollector(args.user, args.password, args.region))
+        REGISTRY.register(DataCollector(args.user, args.password, args.region, args.attributes))
         start_http_server(port)
         print("BMW Connected Drive exporter for Prometheus. Serving on port: {}".format(port))
         while True: time.sleep(1)
