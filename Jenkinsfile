@@ -5,6 +5,12 @@ pipeline {
       args '-v /var/run/docker.sock:/var/run/docker.sock -v /usr/bin/docker:/usr/bin/docker'
     }
   }
+  // triggers {
+  //   cron('H 10 * * 2')
+  // }
+  // environment {
+  //   XXX = 'xxx'
+  // }
   options {
     buildDiscarder(
       logRotator(
@@ -14,6 +20,10 @@ pipeline {
     )
   }
   stages {
+    // stage('Init') {
+    //   steps {
+    //   }
+    // }
     stage('Build Backend docker image') {
       steps {
         sh 'DATE=$(date +"%Y%m%d")'
@@ -29,16 +39,16 @@ pipeline {
       }
     }
   }
-  post { 
-    always {
-    }
-    success { 
-    }
-    unstable { 
-    }
-    failure { 
-    }
-    aborted { 
-    }
-  }
+  // post { 
+  //   always {
+  //   }
+  //   success { 
+  //   }
+  //   unstable { 
+  //   }
+  //   failure { 
+  //   }
+  //   aborted { 
+  //   }
+  // }
 }
