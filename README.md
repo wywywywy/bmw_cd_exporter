@@ -53,7 +53,9 @@ Use pip3 if your pip is for Python 2.
 
 ## With Docker
 
-    Todo
+    docker run -d --restart=always -p 9488:9488 -e "BMWCD_USER=xxx@gmail.com" -e "BMWCD_PASSWORD=abc123" -e "BMWCD_REGION=rest_of_world" wywywywy/bmw_cd_exporter:latest
+
+Change the environment variables to what you need.
 
 ## Prometheus Config
 
@@ -88,7 +90,7 @@ This obviously isn't endorsed by BMW, and they don't have a public API.  So they
 
 # TODO
 
-1. Docker
+1. ~~Docker~~
 2. More metrics
 
 # Contributing
