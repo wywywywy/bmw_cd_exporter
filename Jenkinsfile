@@ -26,8 +26,12 @@ pipeline {
     // }
     stage('Build Backend docker image') {
       steps {
-        sh 'DATE=$(date +"%Y%m%d")'
-        sh 'docker build -t wywywywy/bmw_cd_exporter:latest -t wywywywy/bmw_cd_exporter:$DATE .'
+        // sh 'DATE=$(date +"%Y%m%d")'
+        // sh 'docker build -t wywywywy/bmw_cd_exporter:latest -t wywywywy/bmw_cd_exporter:$DATE .'
+        sh """
+          DATE=\$(date +"%Y%m%d")
+          docker build -t wywywywy/bmw_cd_exporter:latest -t wywywywy/bmw_cd_exporter:\$DATE .
+        """
       }
     }
     stage('Push Backend docker image to repo') {
