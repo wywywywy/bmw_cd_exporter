@@ -37,8 +37,12 @@ pipeline {
     stage('Push Backend docker image to repo') {
       steps {
         withCredentials([usernamePassword(credentialsId: 'dockerHub', passwordVariable: 'dockerHubPassword', usernameVariable: 'dockerHubUser')]) {
-          sh "docker login -u ${env.dockerHubUser} -p ${env.dockerHubPassword}"
-          sh "docker push wywywywy/bmw_cd_exporter"
+          sh """
+            DATE=\$(date +"%Y%m%d")
+            docker login -u ${env.dockerHubUser} -p ${env.dockerHubPassword}
+            docker push wywywywy/bmw_cd_exporter:\$DATE
+            docker push wywywywy/bmw_cd_exporter:latest
+          """
         }
       }
     }
