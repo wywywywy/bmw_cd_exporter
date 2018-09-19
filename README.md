@@ -1,6 +1,6 @@
 BMW Connected Drive exporter for Prometheus.io, written in Python 3.
 
-This exporter uses [Gerard33's bimmer_connected library](https://github.com/gerard33/bimmer_connected), which is forked from [M1n3rva's](https://github.com/m1n3rva/bimmer_connected).
+This exporter uses [M1n3rva's bimmer_connected library](https://github.com/m1n3rva/bimmer_connected).
 
 # Usage
 

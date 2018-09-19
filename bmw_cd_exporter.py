@@ -4,7 +4,6 @@
 #import core modules
 import os
 import sys
-import requests
 import time
 import json
 import argparse
