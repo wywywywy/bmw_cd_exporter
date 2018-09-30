@@ -17,6 +17,7 @@ This exporter uses [M1n3rva's bimmer_connected library](https://github.com/m1n3r
                           Connected Drive
     --password abc123     Password for logging on to BMW Connected Drive
     --port 9488           Exporter listens on this port
+    --interval 5          Pooling interval in minutes
     --region rest_of_world
                           BMW Connected Drive region
                           (north_america/china/rest_of_world)
@@ -29,8 +30,9 @@ This exporter uses [M1n3rva's bimmer_connected library](https://github.com/m1n3r
 The arguments can also be set as env variables instead. Useful if you're using it in a Docker container.
 1. BMWCD_USER
 2. BMWCD_PASSWORD
-3. BMWCD_PORT
-4. BMWCD_REGION
+3. BMWCD_REGION
+4. BMWCD_PORT
+5. BMWCD_INTERVAL
 
 ## Notes on Region
 
@@ -62,7 +64,6 @@ Change the environment variables to what you need.
 Add this to prometheus.yml and change the IP/port if needed.
 
     - job_name: 'bmw_cd_exporter'
-        scrape_interval: 5m
         metrics_path: /
         static_configs:
         - targets:
@@ -72,7 +73,7 @@ Add this to prometheus.yml and change the IP/port if needed.
 
 It supports multiple vehicles in the same BMW Connected Drive account.
 
-Please reduce the pooling rate to maybe once every minute, to avoid overloading BMW's servers.
+Please make sure the pooling rate to set to maybe once every couple of minutes, to avoid overloading BMW's servers.  Default is 5.
 
 Currently supported metrics are -
 1. mileage

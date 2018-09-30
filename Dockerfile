@@ -10,6 +10,6 @@ COPY bmw_cd_exporter.py /usr/src/app
 COPY attributes.json /usr/src/app
 
 EXPOSE 9488
-ENV BMWCD_PORT=9488 DEBUG=0
+ENV BMWCD_PORT=9488 BMWCD_INTERVAL=5 BMWCD_REGION=rest_of_world DEBUG=0
 
 ENTRYPOINT [ "python", "-u", "./bmw_cd_exporter.py" ]
