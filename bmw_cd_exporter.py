@@ -7,6 +7,7 @@ import sys
 import time
 import json
 import argparse
+import paho.mqtt.client as mqtt
 
 # import the prometheus modules
 import prometheus_client
@@ -24,7 +25,7 @@ attrs = {}
 app = 'bmwconnecteddrive'
 
 # collect data from BMW CD
-def collectData(user, password, region, attributes):
+def collectData(user, password, region, attributes, mqttParams):
     # connect to bmw
     account = ConnectedDriveAccount(user, password, get_region_from_name(region))
     if not account:
@@ -37,13 +38,24 @@ def collectData(user, password, region, attributes):
     if DEBUG:
         print('DEBUG: Found {} vehicles: {}'.format(len(account.vehicles),','.join([v.name for v in account.vehicles])))
 
+    if (mqttParams):
+        mqttclient = mqtt.Client(app)
+        mqttclient.connect(mqttParams)
+
+
     # set gauges for each vehicle
     for vehicle in account.vehicles:
         for attr in attrs:
             if getattr(vehicle.state,attr['name']):
-                vehicle_name = ''.join(e for e in vehicle.name if e.isalnum())
-                if gauges[attr['name']]:
-                    gauges[attr['name']].labels(vehicle=vehicle_name, vin=vehicle.vin).set(getattr(vehicle.state,attr['name']))
+                if (mqttParams):
+                    mqtttopic= vehicle.name + '/' + attr['name']
+                    mqttclient.publish(mqtttopic, getattr(vehicle.state,attr['name']))
+                else: 
+                    vehicle_name = ''.join(e for e in vehicle.name if e.isalnum())
+                    if gauges[attr['name']]:
+                        gauges[attr['name']].labels(vehicle=vehicle_name, vin=vehicle.vin).set(getattr(vehicle.state,attr['name']))
+                
+
 
 
 def parse_args():
@@ -94,6 +106,14 @@ def parse_args():
         help='Override path to the JSON file containing all attributes (optional)',
         default='attributes.json'
     )
+    parser.add_argument(
+        '--mqtt',
+        metavar='x.y.z.w',
+        required=False,
+        type=str,
+        help='Mqtt server address',
+        default=os.environ.get('BMW_MQTTSERVER')
+    )
     return parser.parse_args()
 
 
@@ -113,25 +133,33 @@ if __name__ == "__main__":
             exit(1)
         if args.interval < 1:
             args.interval = 1
-
-        # register & start prometheus exporter server
-        print('INFO: Registering Prometheus metrics...')
+        print(time.asctime(time.localtime(time.time())),":" 'INFO: Parse JSON File')
+           
         with open(args.attributes) as json_file:
             attrs = json.load(json_file)
+        
+        if (args.mqtt):
+            collectData(args.user, args.password, args.region, args.attributes, args.mqtt)
+        else:
+            # register & start prometheus exporter server
+        
+            print('INFO: Registering Prometheus metrics...')
             for attr in attrs:
                 gauges[attr['name']] = Gauge(app + '_' + attr['name'] + '_' + attr['unit'], attr['desc'], ['vehicle','vin'])
 
-        # Get initial metrics
-        print('INFO: Getting data from BMW Connected Drive...')
-        collectData(args.user, args.password, args.region, args.attributes)
+            # Get initial metrics
+            print(time.asctime(time.localtime(time.time())), ":", 'INFO: Getting data from BMW Connected Drive...')
+            collectData(args.user, args.password, args.region, args.attributes, '')
 
-        # Start HTTP server
-        print('INFO: Starting HTTP server...')
-        start_http_server(port)
-        print("INFO: BMW Connected Drive exporter for Prometheus. Serving on port: {}".format(port))
-        while True: 
-            time.sleep(args.interval * 60)
-            collectData(args.user, args.password, args.region, args.attributes)
+            # Start HTTP server
+            print('INFO: Starting HTTP server...')
+            start_http_server(port)
+            print("INFO: BMW Connected Drive exporter for Prometheus. Serving on port: {}".format(port))
+            while True: 
+                time.sleep(args.interval * 60)
+                collectData(args.user, args.password, args.region, args.attributes, '')
+        
+
 
     except KeyboardInterrupt:
         print('INFO: Keyboard interrupted. Exiting')
