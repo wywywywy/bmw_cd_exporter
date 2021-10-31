@@ -1,2 +1,3 @@
 prometheus_client>=0.9.0
 bimmer_connected>=0.7.18
+paho-mqtt>=1.5.1
