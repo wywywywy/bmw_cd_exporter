@@ -166,7 +166,10 @@ if __name__ == "__main__":
             print("INFO: BMW Connected Drive exporter for Prometheus. Serving on port: {}".format(port))
         while True: 
             time.sleep(args.interval * 60)
-            collectData(args.user, args.password, args.region, args.attributes, '')
+            if (args.mqtt):
+                collectData(args.user, args.password, args.region, args.attributes, args.mqtt)
+            else:
+                collectData(args.user, args.password, args.region, args.attributes, '')
         
 
 
