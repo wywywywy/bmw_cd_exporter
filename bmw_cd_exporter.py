@@ -17,12 +17,14 @@ from prometheus_client import start_http_server, Gauge
 import bimmer_connected
 from bimmer_connected.account import ConnectedDriveAccount
 from bimmer_connected.country_selector import get_region_from_name, valid_regions
+from bimmer_connected.country_selector import valid_regions
 
 # initial values
 DEBUG = int(os.environ.get('DEBUG', '0'))
 gauges = {}
 attrs = {}
 app = 'bmwconnecteddrive'
+validlist =valid_regions()
 
 # collect data from BMW CD
 def collectData(user, password, region, attributes, mqttParams):
@@ -41,15 +43,20 @@ def collectData(user, password, region, attributes, mqttParams):
     if (mqttParams):
         mqttclient = mqtt.Client(app)
         mqttclient.connect(mqttParams)
-
+    print(time.asctime(time.localtime(time.time())), ":", 'INFO: Getting data from BMW Connected Drive...') 
 
     # set gauges for each vehicle
     for vehicle in account.vehicles:
         for attr in attrs:
-            if getattr(vehicle.state,attr['name']):
+            if getattr(vehicle.status,attr['name']):
+                if len(getattr(vehicle.status,attr['name']))>0:
+                    thisattr= getattr(vehicle.status,attr['name'])[0]
+                else:
+                    thisattr= getattr(vehicle.status,attr['name'])
+            
                 if (mqttParams):
-                    mqtttopic= vehicle.name + '/' + attr['name']
-                    mqttclient.publish(mqtttopic, getattr(vehicle.state,attr['name']))
+                    mqtttopic= app +'/'+ vehicle.name + '/' + attr['name']
+                    mqttclient.publish(mqtttopic, thisattr)
                 else: 
                     vehicle_name = ''.join(e for e in vehicle.name if e.isalnum())
                     if gauges[attr['name']]:
@@ -112,7 +119,7 @@ def parse_args():
         required=False,
         type=str,
         help='Mqtt server address',
-        default=os.environ.get('BMW_MQTTSERVER')
+        default=os.environ.get('BMWMQTT_SERVER')
     )
     return parser.parse_args()
 
@@ -133,16 +140,15 @@ if __name__ == "__main__":
             exit(1)
         if args.interval < 1:
             args.interval = 1
-        print(time.asctime(time.localtime(time.time())),":" 'INFO: Parse JSON File')
-           
+        
         with open(args.attributes) as json_file:
             attrs = json.load(json_file)
         
         if (args.mqtt):
             collectData(args.user, args.password, args.region, args.attributes, args.mqtt)
-            while True:
-                time.sleep(args.interval*60)
-                collectData(args.user, args.password, args.region, args.attributes, args.mqtt)
+            #while True:
+             #   time.sleep(args.interval*60)
+              #  collectData(args.user, args.password, args.region, args.attributes, args.mqtt)
         else:
             # register & start prometheus exporter server
         
@@ -158,9 +164,9 @@ if __name__ == "__main__":
             print('INFO: Starting HTTP server...')
             start_http_server(port)
             print("INFO: BMW Connected Drive exporter for Prometheus. Serving on port: {}".format(port))
-            while True: 
-                time.sleep(args.interval * 60)
-                collectData(args.user, args.password, args.region, args.attributes, '')
+        while True: 
+            time.sleep(args.interval * 60)
+            collectData(args.user, args.password, args.region, args.attributes, '')
         
 
 
