@@ -40,10 +40,16 @@ def collectData(user, password, region, attributes):
     # set gauges for each vehicle
     for vehicle in account.vehicles:
         for attr in attrs:
-            if getattr(vehicle.state,attr['name']):
+            if getattr(vehicle.status,attr['name']):
                 vehicle_name = ''.join(e for e in vehicle.name if e.isalnum())
-                if gauges[attr['name']]:
-                    gauges[attr['name']].labels(vehicle=vehicle_name, vin=vehicle.vin).set(getattr(vehicle.state,attr['name']))
+                vehicle_attribute = getattr(vehicle.status,attr['name'])
+                attribute_value = vehicle_attribute
+                if type(vehicle_attribute) == tuple: # for some attributes, we need to get the value from the tuple
+                    attribute_value = vehicle_attribute[0]
+                if type(attribute_value) == int or type(attribute_value) == float:
+                    gauge = gauges[attr['name']]
+                    if gauge:
+                        gauge.labels(vehicle=vehicle_name, vin=vehicle.vin).set(attribute_value)
 
 
 def parse_args():
