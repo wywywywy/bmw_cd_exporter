@@ -146,9 +146,6 @@ if __name__ == "__main__":
         
         if (args.mqtt):
             collectData(args.user, args.password, args.region, args.attributes, args.mqtt)
-            #while True:
-             #   time.sleep(args.interval*60)
-              #  collectData(args.user, args.password, args.region, args.attributes, args.mqtt)
         else:
             # register & start prometheus exporter server
         
