@@ -1,2 +1,2 @@
-prometheus_client>=0.9.0
-bimmer_connected>=0.8.2
+prometheus_client>=0.13.1
+bimmer_connected>=0.8.10
