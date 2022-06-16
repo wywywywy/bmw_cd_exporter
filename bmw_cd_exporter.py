@@ -3,19 +3,18 @@
 
 #import core modules
 import os
-import sys
 import time
 import json
 import argparse
+import asyncio
 
 # import the prometheus modules
-import prometheus_client
 from prometheus_client import start_http_server, Gauge
 
 # import the bimmer_connected modules
-import bimmer_connected
-from bimmer_connected.account import ConnectedDriveAccount
-from bimmer_connected.country_selector import get_region_from_name, valid_regions
+from bimmer_connected.account import MyBMWAccount
+from bimmer_connected.api.regions import get_region_from_name
+from bimmer_connected.models import ValueWithUnit
 
 # initial values
 DEBUG = int(os.environ.get('DEBUG', '0'))
@@ -24,32 +23,37 @@ attrs = {}
 app = 'bmwconnecteddrive'
 
 # collect data from BMW CD
-def collectData(user, password, region, attributes):
+async def collectData(user, password, region, attributes):
     # connect to bmw
-    account = ConnectedDriveAccount(user, password, get_region_from_name(region))
+    account = MyBMWAccount(user, password, get_region_from_name(region))
     if not account:
         print('ERROR: Unable to log on')
         exit(1)
 
     # update states of all vehicles
-    account.update_vehicle_states()
+    await account.get_vehicles()
 
     if DEBUG:
         print('DEBUG: Found {} vehicles: {}'.format(len(account.vehicles),','.join([v.name for v in account.vehicles])))
 
     # set gauges for each vehicle
     for vehicle in account.vehicles:
-        for attr in attrs:
-            if getattr(vehicle.status,attr['name']):
-                vehicle_name = ''.join(e for e in vehicle.name if e.isalnum())
-                vehicle_attribute = getattr(vehicle.status,attr['name'])
-                attribute_value = vehicle_attribute
-                if type(vehicle_attribute) == tuple: # for some attributes, we need to get the value from the tuple
-                    attribute_value = vehicle_attribute[0]
-                if type(attribute_value) == int or type(attribute_value) == float:
+        vehicle_name = ''.join(e for e in vehicle.name if e.isalnum())
+        for attr in attributes:
+            if attr['group']:
+                vehicle_attribute_group = getattr(vehicle.status.vehicle,attr['group'])
+                vehicle_attribute = getattr(vehicle_attribute_group,attr['name'])
+            else:
+                vehicle_attribute = getattr(vehicle.status.vehicle,attr['name'])
+            if vehicle_attribute:
+                if type(vehicle_attribute) == ValueWithUnit: # some attributes are typed ValueWithUnit, some are just numbers
+                    vehicle_attribute_value = vehicle_attribute.value
+                else:
+                    vehicle_attribute_value = vehicle_attribute
+                if type(vehicle_attribute_value) == int or type(vehicle_attribute_value) == float:
                     gauge = gauges[attr['name']]
                     if gauge:
-                        gauge.labels(vehicle=vehicle_name, vin=vehicle.vin).set(attribute_value)
+                        gauge.labels(vehicle=vehicle_name, vin=vehicle.vin).set(vehicle_attribute_value)
 
 
 def parse_args():
@@ -83,7 +87,7 @@ def parse_args():
         metavar='5',
         required=False,
         type=int,
-        help='Pooling interval in minutes',
+        help='Polling interval in minutes',
         default=int(os.environ.get('BMWCD_INTERVAL', '5'))
     )
     parser.add_argument(
@@ -103,7 +107,7 @@ def parse_args():
     return parser.parse_args()
 
 
-if __name__ == "__main__":
+async def main():
     try:
         # get & check args
         args = parse_args()
@@ -129,7 +133,7 @@ if __name__ == "__main__":
 
         # Get initial metrics
         print('INFO: Getting data from BMW Connected Drive...')
-        collectData(args.user, args.password, args.region, args.attributes)
+        await collectData(args.user, args.password, args.region, attrs)
 
         # Start HTTP server
         print('INFO: Starting HTTP server...')
@@ -137,8 +141,11 @@ if __name__ == "__main__":
         print("INFO: BMW Connected Drive exporter for Prometheus. Serving on port: {}".format(port))
         while True: 
             time.sleep(args.interval * 60)
-            collectData(args.user, args.password, args.region, args.attributes)
+            await collectData(args.user, args.password, args.region, attrs)
 
     except KeyboardInterrupt:
         print('INFO: Keyboard interrupted. Exiting')
         exit(0)
+
+
+asyncio.run(main())
