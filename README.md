@@ -17,7 +17,7 @@ This exporter uses [M1n3rva's bimmer_connected library](https://github.com/m1n3r
                           Connected Drive
     --password abc123     Password for logging on to BMW Connected Drive
     --port 9488           Exporter listens on this port
-    --interval 5          Pooling interval in minutes
+    --interval 5          Polling interval in minutes
     --region rest_of_world
                           BMW Connected Drive region
                           (north_america/china/rest_of_world)

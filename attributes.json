@@ -1,25 +1,38 @@
-[{
-    "name": "mileage",
-    "unit": "kilometres",
-    "desc": "the current vehicle mileage"
-},{
-    "name": "remaining_range_total",
-    "unit": "kilometres",
-    "desc": "the current remaining range (fuel & electric)"
-},{
-    "name": "remaining_range_electric",
-    "unit": "kilometres",
-    "desc": "the current remaining range (electric)"
-},{
-    "name": "remaining_range_fuel",
-    "unit": "kilometres",
-    "desc": "the current remaining range (fuel)"
-},{
-    "name": "remaining_fuel",
-    "unit": "litres",
-    "desc": "the amount of fuel remaining"
-},{
-    "name": "charging_level_hv",
-    "unit": "percent",
-    "desc": "the high voltage battery level"
-}]
+[
+    {
+        "name": "mileage",
+        "group": "",
+        "unit": "kilometres",
+        "desc": "the current vehicle mileage"
+    },
+    {
+        "name": "remaining_range_total",
+        "group": "fuel_and_battery",
+        "unit": "kilometres",
+        "desc": "the current remaining range (fuel & electric)"
+    },
+    {
+        "name": "remaining_range_electric",
+        "group": "fuel_and_battery",
+        "unit": "kilometres",
+        "desc": "the current remaining range (electric)"
+    },
+    {
+        "name": "remaining_range_fuel",
+        "group": "fuel_and_battery",
+        "unit": "kilometres",
+        "desc": "the current remaining range (fuel)"
+    },
+    {
+        "name": "remaining_fuel",
+        "group": "fuel_and_battery",
+        "unit": "litres",
+        "desc": "the amount of fuel remaining"
+    },
+    {
+        "name": "remaining_battery_percent",
+        "group": "fuel_and_battery",
+        "unit": "percent",
+        "desc": "the remaining battery level"
+    }
+]
